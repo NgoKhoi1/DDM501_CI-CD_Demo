@@ -19,13 +19,13 @@ jobs:
               run: |
                 python3 --version
                 (Get-Command python3).Source
-            # - name: Install dependencies
-            #   run: |
-            #     source .venv/bin/activate
-            #     pip install -r requirements.txt
+            - name: Install dependencies
+              run: |
+                python3 -m venv .venv
+                .venv\Scripts\python.exe -m pip install -r requirements.txt
             - name: Run tests
               run: |
-                pytest test_app.py -v
+                .venv\Scripts\python.exe -m pytest test_app.py -v
     build:
         name: Build Docker Image
         runs-on: self-hosted
