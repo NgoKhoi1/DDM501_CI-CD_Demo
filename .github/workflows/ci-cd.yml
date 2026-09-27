@@ -4,6 +4,9 @@ on:
         branches: [ main, dev]
     pull_request:
         branches: [ main, dev]
+defaults:
+    run:
+        shell: powershell
 jobs:
     test:
         name: Run Tests
@@ -15,7 +18,7 @@ jobs:
             - name: Verify Python version
               run: |
                 python3 --version
-                which python3
+                (Get-Command python3).Source
             # - name: Install dependencies
             #   run: |
             #     source .venv/bin/activate
@@ -43,14 +46,15 @@ jobs:
         steps:
             - name: stop old container
               run: |
-                 docker stop python-app || true
+                 if (docker ps -aq --filter "name=^python-app$") { docker rm -f python-app }
             - name: start new container
               run: |
                  docker run -d --name python-app -p 5001:5001 --restart unless-stopped ci-cd-demo:latest
             - name: check deployment
               run: |
-                sleep 10
-                curl -X GET http://localhost:5001/health || exit 1
-                echo "Deployment successful"
+                Start-Sleep -Seconds 10
+                curl.exe --fail http://localhost:5001/health
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+                Write-Output "Deployment successful"
             - name: show running containers
-              run: docker ps | grep python-app
+              run: docker ps --filter "name=python-app"
